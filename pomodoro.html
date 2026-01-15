@@ -495,11 +495,43 @@
             transform: translateX(-50%) translateY(0);
         }
 
-        /* Toggle Buttons */
+        /* Add-ons Panel */
+        .addons-panel {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 100;
+            cursor: move;
+            user-select: none;
+        }
+
+        .addons-panel.dragging {
+            opacity: 0.9;
+        }
+
+        .addons-inner {
+            background: rgba(255, 252, 245, 0.94);
+            border: 4px solid var(--meadow-green);
+            border-radius: 16px;
+            padding: 12px 18px;
+            box-shadow:
+                0 6px 0 rgba(40, 80, 40, 0.3),
+                0 12px 40px rgba(0, 0, 0, 0.2);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .addons-label {
+            font-size: 8px;
+            color: var(--meadow-green);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            white-space: nowrap;
+        }
+
         .toggle-buttons {
-            position: absolute;
-            top: 12px;
-            right: 12px;
             display: flex;
             gap: 8px;
         }
@@ -899,6 +931,279 @@
             color: white;
         }
 
+        /* Settings & Stats Panels */
+        .settings-panel,
+        .stats-panel {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+            z-index: 10;
+            cursor: move;
+            user-select: none;
+        }
+
+        .settings-panel {
+            left: calc(50% - 380px);
+        }
+
+        .stats-panel {
+            left: calc(50% + 220px);
+        }
+
+        .settings-panel.show,
+        .stats-panel.show {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .panel-inner {
+            background: rgba(255, 252, 245, 0.94);
+            border: 4px solid var(--meadow-green);
+            border-radius: 16px;
+            padding: 15px;
+            width: 200px;
+            box-shadow:
+                0 6px 0 rgba(40, 80, 40, 0.3),
+                0 12px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        .panel-header {
+            font-size: 10px;
+            color: var(--meadow-green);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        .setting-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .setting-row label {
+            font-size: 8px;
+            color: var(--text-dark);
+        }
+
+        .setting-row input {
+            width: 50px;
+            font-family: 'Press Start 2P', monospace;
+            font-size: 8px;
+            padding: 6px;
+            border: 2px solid #d0c8b8;
+            border-radius: 6px;
+            text-align: center;
+            background: white;
+            color: var(--text-dark);
+        }
+
+        .setting-row input:focus {
+            border-color: var(--meadow-green);
+            outline: none;
+        }
+
+        .save-settings-btn {
+            width: 100%;
+            font-family: 'Press Start 2P', monospace;
+            font-size: 8px;
+            padding: 10px;
+            margin-top: 10px;
+            background: linear-gradient(180deg, var(--meadow-light) 0%, var(--meadow-green) 100%);
+            border: 2px solid var(--meadow-dark);
+            border-radius: 8px;
+            color: white;
+            cursor: pointer;
+            box-shadow: 0 2px 0 #3a6a2a;
+            transition: all 0.15s ease;
+        }
+
+        .save-settings-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 3px 0 #3a6a2a;
+        }
+
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid #e8e0d0;
+        }
+
+        .stat-row:last-child {
+            border-bottom: none;
+        }
+
+        .stat-label {
+            font-size: 8px;
+            color: #888;
+        }
+
+        .stat-value {
+            font-size: 12px;
+            color: var(--text-dark);
+            font-weight: bold;
+        }
+
+        /* Progress Bar */
+        .progress-bar {
+            display: flex;
+            justify-content: center;
+            gap: 6px;
+            margin-top: 8px;
+        }
+
+        .progress-segment {
+            width: 24px;
+            height: 8px;
+            background: rgba(90, 155, 74, 0.2);
+            border-radius: 4px;
+            border: 2px solid rgba(90, 155, 74, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .progress-segment.filled {
+            background: linear-gradient(180deg, var(--meadow-light) 0%, var(--meadow-green) 100%);
+            border-color: var(--meadow-dark);
+            box-shadow: 0 0 8px rgba(90, 155, 74, 0.5);
+        }
+
+        .progress-segment.current {
+            animation: pulse-segment 1s ease-in-out infinite;
+        }
+
+        @keyframes pulse-segment {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+
+        /* Cottage Chimney & Smoke */
+        .cottage-chimney {
+            position: absolute;
+            top: -5px;
+            right: 8px;
+            width: 8px;
+            height: 12px;
+            background: #8b4513;
+            border-radius: 2px 2px 0 0;
+        }
+
+        .smoke-container {
+            position: absolute;
+            top: -25px;
+            right: 6px;
+            width: 12px;
+            height: 25px;
+            overflow: visible;
+        }
+
+        .smoke {
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            width: 6px;
+            height: 6px;
+            background: rgba(200, 200, 200, 0.6);
+            border-radius: 50%;
+            animation: smoke-rise 2s ease-out infinite;
+            opacity: 0;
+        }
+
+        .smoke:nth-child(1) { animation-delay: 0s; }
+        .smoke:nth-child(2) { animation-delay: 0.5s; }
+        .smoke:nth-child(3) { animation-delay: 1s; }
+        .smoke:nth-child(4) { animation-delay: 1.5s; }
+
+        @keyframes smoke-rise {
+            0% {
+                opacity: 0;
+                transform: translateX(-50%) translateY(0) scale(0.5);
+            }
+            20% {
+                opacity: 0.7;
+            }
+            100% {
+                opacity: 0;
+                transform: translateX(-50%) translateY(-30px) scale(1.5);
+            }
+        }
+
+        /* Window Glow */
+        .cottage-window {
+            transition: all 0.3s ease;
+        }
+
+        .cottage.celebration .cottage-window {
+            background: #ffdd66;
+            box-shadow: 0 0 10px rgba(255, 221, 102, 0.8),
+                        0 0 20px rgba(255, 180, 60, 0.5);
+            animation: window-glow 1s ease-in-out infinite alternate;
+        }
+
+        @keyframes window-glow {
+            0% { box-shadow: 0 0 8px rgba(255, 221, 102, 0.7), 0 0 15px rgba(255, 180, 60, 0.4); }
+            100% { box-shadow: 0 0 12px rgba(255, 221, 102, 0.9), 0 0 25px rgba(255, 180, 60, 0.6); }
+        }
+
+        /* Cottage idle animation */
+        .cottage {
+            animation: cottage-idle 3s ease-in-out infinite;
+        }
+
+        @keyframes cottage-idle {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-1px); }
+        }
+
+        /* Rain Effect */
+        .rain-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 5;
+            overflow: hidden;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+
+        .rain-container.active {
+            opacity: 1;
+        }
+
+        .raindrop {
+            position: absolute;
+            width: 2px;
+            height: 15px;
+            background: linear-gradient(180deg, transparent 0%, rgba(174, 194, 224, 0.6) 50%, rgba(174, 194, 224, 0.8) 100%);
+            animation: rain-fall linear infinite;
+        }
+
+        @keyframes rain-fall {
+            0% {
+                transform: translateY(-20px);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(100vh);
+                opacity: 0;
+            }
+        }
+
         /* Responsive */
         @media (max-width: 400px) {
             .timer-display { font-size: 30px; }
@@ -909,14 +1214,24 @@
     </style>
 </head>
 <body>
+    <!-- Rain Effect Container -->
+    <div class="rain-container" id="rainContainer"></div>
+
+    <!-- Add-ons Panel -->
+    <div class="addons-panel" id="addonsPanel">
+        <div class="addons-inner">
+            <span class="addons-label">Add-ons</span>
+            <div class="toggle-buttons">
+                <button class="toggle-btn" id="settingsBtn" title="Settings">⚙️</button>
+                <button class="toggle-btn" id="statsBtn" title="Statistics">📊</button>
+                <button class="toggle-btn" id="todoBtn" title="To-Do List">📝</button>
+                <button class="toggle-btn" id="musicBtn" title="Ambient Sounds">🎵</button>
+            </div>
+        </div>
+    </div>
+
     <div class="container">
         <div class="card">
-            <!-- Toggle buttons -->
-            <div class="toggle-buttons">
-                <button class="toggle-btn" id="todoBtn">📝</button>
-                <button class="toggle-btn" id="musicBtn">🎵</button>
-            </div>
-
             <!-- Timer -->
             <div class="timer-section">
                 <div class="timer-label" id="timerLabel">Focus</div>
@@ -924,6 +1239,12 @@
                 <div class="pomodoro-counter">
                     <span class="counter-label">Pomodoros:</span>
                     <span class="counter-value" id="pomodoroCount">0</span>
+                </div>
+                <div class="progress-bar" id="progressBar">
+                    <div class="progress-segment" data-index="0"></div>
+                    <div class="progress-segment" data-index="1"></div>
+                    <div class="progress-segment" data-index="2"></div>
+                    <div class="progress-segment" data-index="3"></div>
                 </div>
             </div>
 
@@ -941,7 +1262,14 @@
 
                 <!-- Destination cottage -->
                 <div class="destination">
-                    <div class="cottage">
+                    <div class="cottage" id="cottage">
+                        <div class="smoke-container">
+                            <div class="smoke"></div>
+                            <div class="smoke"></div>
+                            <div class="smoke"></div>
+                            <div class="smoke"></div>
+                        </div>
+                        <div class="cottage-chimney"></div>
                         <div class="cottage-roof"></div>
                         <div class="cottage-body">
                             <div class="cottage-door"></div>
@@ -1010,13 +1338,62 @@
                 </div>
             </div>
         </div>
+
+        <!-- Settings Panel -->
+        <div class="settings-panel" id="settingsPanel">
+            <div class="panel-inner">
+                <div class="panel-header">Settings</div>
+                <div class="setting-row">
+                    <label>Focus (min)</label>
+                    <input type="number" id="focusDuration" min="1" max="60" value="25">
+                </div>
+                <div class="setting-row">
+                    <label>Short Break (min)</label>
+                    <input type="number" id="shortBreakDuration" min="1" max="30" value="5">
+                </div>
+                <div class="setting-row">
+                    <label>Long Break (min)</label>
+                    <input type="number" id="longBreakDuration" min="1" max="60" value="15">
+                </div>
+                <div class="setting-row">
+                    <label>Prep (min)</label>
+                    <input type="number" id="prepDuration" min="1" max="30" value="10">
+                </div>
+                <button class="save-settings-btn" id="saveSettingsBtn">Save Settings</button>
+            </div>
+        </div>
+
+        <!-- Stats Panel -->
+        <div class="stats-panel" id="statsPanel">
+            <div class="panel-inner">
+                <div class="panel-header">Statistics</div>
+                <div class="stat-row">
+                    <span class="stat-label">Today</span>
+                    <span class="stat-value" id="statToday">0</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">This Week</span>
+                    <span class="stat-value" id="statWeek">0</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">All Time</span>
+                    <span class="stat-value" id="statTotal">0</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Current Streak</span>
+                    <span class="stat-value" id="statStreak">0 days</span>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Message popup -->
     <div class="message" id="message"></div>
 
     <script>
-        const CONFIG = {
+        // Load settings from localStorage or use defaults
+        const savedSettings = JSON.parse(localStorage.getItem('pomodoro-settings') || 'null');
+        const CONFIG = savedSettings || {
             focus: 25 * 60,
             prep: 10 * 60,
             shortBreak: 5 * 60,
@@ -1055,6 +1432,14 @@
         const todoList = document.getElementById('todoList');
         const todoCount = document.getElementById('todoCount');
         const todoClearBtn = document.getElementById('todoClearBtn');
+        const settingsBtn = document.getElementById('settingsBtn');
+        const settingsPanel = document.getElementById('settingsPanel');
+        const saveSettingsBtn = document.getElementById('saveSettingsBtn');
+        const statsBtn = document.getElementById('statsBtn');
+        const statsPanel = document.getElementById('statsPanel');
+        const cottage = document.getElementById('cottage');
+        const progressBar = document.getElementById('progressBar');
+        const rainContainer = document.getElementById('rainContainer');
 
         function formatTime(s) {
             const m = Math.floor(s / 60);
@@ -1096,6 +1481,25 @@
         function arrivedAtDestination() {
             walker.classList.remove('walking');
             walker.classList.add('arrived');
+            cottage.classList.add('celebration');
+        }
+
+        function leaveCottage() {
+            cottage.classList.remove('celebration');
+        }
+
+        function updateProgressBar() {
+            const segments = progressBar.querySelectorAll('.progress-segment');
+            const cyclePosition = state.pomodorosCompleted % 4;
+
+            segments.forEach((segment, index) => {
+                segment.classList.remove('filled', 'current');
+                if (index < cyclePosition) {
+                    segment.classList.add('filled');
+                } else if (index === cyclePosition && state.mode === 'focus' && state.running) {
+                    segment.classList.add('current');
+                }
+            });
         }
 
         function setMode(mode) {
@@ -1120,11 +1524,13 @@
             };
             timerLabel.textContent = labels[mode] || 'Focus';
 
-            // Reset walker
+            // Reset walker and cottage
             walker.style.left = PATH_START + 'px';
             walker.classList.remove('walking', 'arrived');
+            leaveCottage();
 
             updateDisplay();
+            updateProgressBar();
         }
 
         function tick() {
@@ -1139,21 +1545,26 @@
 
                 if (state.mode === 'focus') {
                     state.pomodorosCompleted++;
+                    updateStats(); // Track statistics
                     updateDisplay();
 
                     if (state.pomodorosCompleted % 4 === 0) {
                         showMessage('4 Pomodoros done! Long break time 🏡');
+                        sendNotification('4 Pomodoros Complete!', 'Time for a long break. Great work!');
                         setTimeout(() => startMode('longBreak'), 3000);
                     } else {
                         showMessage('Pomodoro complete! Short break 🌸');
+                        sendNotification('Pomodoro Complete!', 'Time for a short break.');
                         setTimeout(() => startMode('shortBreak'), 3000);
                     }
                 } else if (state.mode === 'prep') {
                     showMessage('Prep done! Starting focus 🎯');
+                    sendNotification('Prep Done!', 'Starting focus session.');
                     setTimeout(() => startMode('focus'), 3000);
                 } else {
                     // After any break, start focus
                     showMessage('Break over! Back to focus 🚶');
+                    sendNotification('Break Over!', 'Time to focus again.');
                     setTimeout(() => startMode('focus'), 3000);
                 }
             }
@@ -1164,6 +1575,7 @@
                 clearInterval(state.interval);
                 state.running = false;
             } else {
+                requestNotificationPermission();
                 playBell(); // Bell at start
                 state.interval = setInterval(tick, 1000);
                 state.running = true;
@@ -1200,6 +1612,21 @@
                 toggle();
             }
         });
+
+        // ============================================
+        // Browser Notifications
+        // ============================================
+        function requestNotificationPermission() {
+            if ('Notification' in window && Notification.permission === 'default') {
+                Notification.requestPermission();
+            }
+        }
+
+        function sendNotification(title, body) {
+            if ('Notification' in window && Notification.permission === 'granted') {
+                new Notification(title, { body });
+            }
+        }
 
         // ============================================
         // Ambient Sound Generator
@@ -1388,6 +1815,12 @@
                 activeSound = btn.dataset.sound;
                 if (isPlaying) {
                     playSound(activeSound);
+                    // Toggle rain effect based on sound
+                    if (activeSound === 'rain') {
+                        showRain();
+                    } else {
+                        hideRain();
+                    }
                 }
             });
         });
@@ -1400,6 +1833,33 @@
             }
         });
 
+        // ============================================
+        // Rain Effect
+        // ============================================
+        function createRaindrops() {
+            rainContainer.innerHTML = '';
+            const numDrops = 50;
+
+            for (let i = 0; i < numDrops; i++) {
+                const drop = document.createElement('div');
+                drop.className = 'raindrop';
+                drop.style.left = Math.random() * 100 + '%';
+                drop.style.animationDuration = (0.5 + Math.random() * 0.5) + 's';
+                drop.style.animationDelay = Math.random() * 2 + 's';
+                drop.style.opacity = 0.3 + Math.random() * 0.5;
+                rainContainer.appendChild(drop);
+            }
+        }
+
+        function showRain() {
+            createRaindrops();
+            rainContainer.classList.add('active');
+        }
+
+        function hideRain() {
+            rainContainer.classList.remove('active');
+        }
+
         // Music toggle - start/stop sound
         musicBtn.addEventListener('click', () => {
             musicPlayer.classList.toggle('show');
@@ -1407,8 +1867,12 @@
 
             if (musicPlayer.classList.contains('show')) {
                 playSound(activeSound);
+                if (activeSound === 'rain') {
+                    showRain();
+                }
             } else {
                 stopSound();
+                hideRain();
             }
         });
 
@@ -1494,11 +1958,124 @@
             });
         }
 
-        // Make card, music player, and todo panel draggable
+        // Make all panels draggable
         const card = document.querySelector('.card');
+        const addonsPanel = document.getElementById('addonsPanel');
         makeDraggable(card);
+        makeDraggable(addonsPanel);
         makeDraggable(musicPlayer);
         makeDraggable(todoPanel);
+        makeDraggable(settingsPanel);
+        makeDraggable(statsPanel);
+
+        // ============================================
+        // Settings Functionality
+        // ============================================
+        function loadSettingsUI() {
+            document.getElementById('focusDuration').value = CONFIG.focus / 60;
+            document.getElementById('shortBreakDuration').value = CONFIG.shortBreak / 60;
+            document.getElementById('longBreakDuration').value = CONFIG.longBreak / 60;
+            document.getElementById('prepDuration').value = CONFIG.prep / 60;
+        }
+
+        function saveSettings() {
+            CONFIG.focus = parseInt(document.getElementById('focusDuration').value) * 60;
+            CONFIG.shortBreak = parseInt(document.getElementById('shortBreakDuration').value) * 60;
+            CONFIG.longBreak = parseInt(document.getElementById('longBreakDuration').value) * 60;
+            CONFIG.prep = parseInt(document.getElementById('prepDuration').value) * 60;
+
+            localStorage.setItem('pomodoro-settings', JSON.stringify(CONFIG));
+            setMode(state.mode); // Refresh current mode with new duration
+            showMessage('Settings saved!');
+        }
+
+        settingsBtn.addEventListener('click', () => {
+            settingsPanel.classList.toggle('show');
+            settingsBtn.classList.toggle('active');
+        });
+
+        saveSettingsBtn.addEventListener('click', saveSettings);
+
+        // Load settings UI on start
+        loadSettingsUI();
+
+        // ============================================
+        // Statistics Functionality
+        // ============================================
+        let stats = JSON.parse(localStorage.getItem('pomodoro-stats') || JSON.stringify({
+            daily: {},
+            totalPomodoros: 0,
+            currentStreak: 0,
+            lastActiveDate: null
+        }));
+
+        function getTodayKey() {
+            return new Date().toISOString().split('T')[0];
+        }
+
+        function getWeekStart() {
+            const now = new Date();
+            const day = now.getDay();
+            const diff = now.getDate() - day + (day === 0 ? -6 : 1);
+            return new Date(now.setDate(diff)).toISOString().split('T')[0];
+        }
+
+        function updateStats() {
+            const today = getTodayKey();
+
+            // Update streak
+            if (stats.lastActiveDate) {
+                const lastDate = new Date(stats.lastActiveDate);
+                const todayDate = new Date(today);
+                const diffDays = Math.floor((todayDate - lastDate) / (1000 * 60 * 60 * 24));
+
+                if (diffDays === 1) {
+                    stats.currentStreak++;
+                } else if (diffDays > 1) {
+                    stats.currentStreak = 1;
+                }
+            } else {
+                stats.currentStreak = 1;
+            }
+
+            stats.lastActiveDate = today;
+            stats.daily[today] = (stats.daily[today] || 0) + 1;
+            stats.totalPomodoros++;
+
+            localStorage.setItem('pomodoro-stats', JSON.stringify(stats));
+            renderStats();
+        }
+
+        function renderStats() {
+            const today = getTodayKey();
+            const weekStart = getWeekStart();
+
+            // Today's count
+            document.getElementById('statToday').textContent = stats.daily[today] || 0;
+
+            // Week's count
+            let weekTotal = 0;
+            Object.keys(stats.daily).forEach(date => {
+                if (date >= weekStart) {
+                    weekTotal += stats.daily[date];
+                }
+            });
+            document.getElementById('statWeek').textContent = weekTotal;
+
+            // Total
+            document.getElementById('statTotal').textContent = stats.totalPomodoros;
+
+            // Streak
+            document.getElementById('statStreak').textContent = stats.currentStreak + ' day' + (stats.currentStreak !== 1 ? 's' : '');
+        }
+
+        statsBtn.addEventListener('click', () => {
+            statsPanel.classList.toggle('show');
+            statsBtn.classList.toggle('active');
+        });
+
+        // Render stats on load
+        renderStats();
 
         // ============================================
         // To-Do List Functionality
