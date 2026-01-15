@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MATRIX TERMINAL</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <canvas id="matrix-bg"></canvas>
+
+    <div class="terminal">
+        <div class="terminal-header">
+            <div class="terminal-buttons">
+                <span class="btn close"></span>
+                <span class="btn minimize"></span>
+                <span class="btn maximize"></span>
+            </div>
+            <div class="terminal-title">MATRIX_TERMINAL_v1.0</div>
+            <div class="status" id="status">
+                <span class="status-dot"></span>
+                <span class="status-text">READY</span>
+            </div>
+        </div>
+
+        <div class="terminal-body">
+            <div class="messages" id="messages">
+                <div class="message system">
+                    <span class="prefix">[SYSTEM]</span>
+                    <span class="text">Connection established. Welcome to the Matrix.</span>
+                    <span class="timestamp"></span>
+                </div>
+                <div class="message system">
+                    <span class="prefix">[SYSTEM]</span>
+                    <span class="text">Type your message and press ENTER to communicate.</span>
+                    <span class="timestamp"></span>
+                </div>
+            </div>
+
+            <div class="input-area">
+                <span class="prompt">&gt;</span>
+                <input type="text" id="user-input" placeholder="Enter message..." autocomplete="off" autofocus>
+                <span class="cursor"></span>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

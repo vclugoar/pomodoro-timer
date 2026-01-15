@@ -1,0 +1,323 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    --matrix-green: #00ff00;
+    --matrix-dark-green: #003300;
+    --matrix-bg: #0a0a0a;
+    --terminal-bg: rgba(0, 10, 0, 0.95);
+    --glow: 0 0 10px #00ff00, 0 0 20px #00ff00, 0 0 30px #00ff00;
+    --text-glow: 0 0 5px #00ff00, 0 0 10px #00ff00;
+}
+
+@font-face {
+    font-family: 'Matrix';
+    src: local('Consolas'), local('Monaco'), local('Courier New');
+}
+
+body {
+    background: var(--matrix-bg);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+    overflow: hidden;
+}
+
+#matrix-bg {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+    opacity: 0.15;
+}
+
+.terminal {
+    position: relative;
+    z-index: 1;
+    width: 90%;
+    max-width: 800px;
+    height: 80vh;
+    background: var(--terminal-bg);
+    border: 1px solid var(--matrix-green);
+    border-radius: 8px;
+    box-shadow: var(--glow), inset 0 0 50px rgba(0, 255, 0, 0.05);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.terminal::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: repeating-linear-gradient(
+        0deg,
+        rgba(0, 0, 0, 0.15),
+        rgba(0, 0, 0, 0.15) 1px,
+        transparent 1px,
+        transparent 2px
+    );
+    pointer-events: none;
+    z-index: 10;
+}
+
+.terminal-header {
+    display: flex;
+    align-items: center;
+    padding: 10px 15px;
+    background: linear-gradient(180deg, #001a00 0%, #000d00 100%);
+    border-bottom: 1px solid var(--matrix-green);
+}
+
+.terminal-buttons {
+    display: flex;
+    gap: 8px;
+}
+
+.terminal-buttons .btn {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--matrix-dark-green);
+    border: 1px solid var(--matrix-green);
+}
+
+.terminal-buttons .btn.close {
+    background: #330000;
+    border-color: #ff0000;
+}
+
+.terminal-buttons .btn.minimize {
+    background: #333300;
+    border-color: #ffff00;
+}
+
+.terminal-buttons .btn.maximize {
+    background: #003300;
+    border-color: #00ff00;
+}
+
+.terminal-title {
+    flex: 1;
+    text-align: center;
+    color: var(--matrix-green);
+    font-size: 14px;
+    text-shadow: var(--text-glow);
+    letter-spacing: 2px;
+}
+
+.status {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    color: var(--matrix-green);
+}
+
+.status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--matrix-green);
+    box-shadow: var(--text-glow);
+    animation: pulse 2s infinite;
+}
+
+.status.error .status-dot {
+    background: #ff0000;
+    box-shadow: 0 0 5px #ff0000, 0 0 10px #ff0000;
+}
+
+.status.loading .status-dot {
+    background: #ffff00;
+    box-shadow: 0 0 5px #ffff00, 0 0 10px #ffff00;
+    animation: blink 0.5s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+@keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+}
+
+.terminal-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.messages::-webkit-scrollbar {
+    width: 8px;
+}
+
+.messages::-webkit-scrollbar-track {
+    background: var(--matrix-bg);
+}
+
+.messages::-webkit-scrollbar-thumb {
+    background: var(--matrix-dark-green);
+    border: 1px solid var(--matrix-green);
+}
+
+.message {
+    color: var(--matrix-green);
+    font-size: 14px;
+    line-height: 1.5;
+    text-shadow: var(--text-glow);
+    animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.message .prefix {
+    color: #00cc00;
+    margin-right: 8px;
+}
+
+.message.user .prefix {
+    color: #00ffff;
+    text-shadow: 0 0 5px #00ffff, 0 0 10px #00ffff;
+}
+
+.message.bot .prefix {
+    color: #00ff00;
+}
+
+.message.system .prefix {
+    color: #ffff00;
+    text-shadow: 0 0 5px #ffff00, 0 0 10px #ffff00;
+}
+
+.message.error .prefix {
+    color: #ff0000;
+    text-shadow: 0 0 5px #ff0000, 0 0 10px #ff0000;
+}
+
+.message .timestamp {
+    color: #006600;
+    font-size: 11px;
+    margin-left: 10px;
+}
+
+.message .text {
+    word-wrap: break-word;
+}
+
+.typing-cursor {
+    display: inline-block;
+    animation: typingBlink 0.7s infinite;
+}
+
+@keyframes typingBlink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; }
+}
+
+.input-area {
+    display: flex;
+    align-items: center;
+    padding: 15px 20px;
+    border-top: 1px solid var(--matrix-dark-green);
+    background: rgba(0, 20, 0, 0.5);
+}
+
+.prompt {
+    color: var(--matrix-green);
+    font-size: 18px;
+    font-weight: bold;
+    margin-right: 10px;
+    text-shadow: var(--text-glow);
+    animation: promptPulse 1s infinite;
+}
+
+@keyframes promptPulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+}
+
+#user-input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: var(--matrix-green);
+    font-family: inherit;
+    font-size: 16px;
+    text-shadow: var(--text-glow);
+    caret-color: var(--matrix-green);
+}
+
+#user-input::placeholder {
+    color: #004400;
+}
+
+#user-input:disabled {
+    opacity: 0.5;
+}
+
+.cursor {
+    display: inline-block;
+    width: 10px;
+    height: 18px;
+    background: var(--matrix-green);
+    animation: cursorBlink 1s step-end infinite;
+    box-shadow: var(--text-glow);
+}
+
+@keyframes cursorBlink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; }
+}
+
+@media (max-width: 600px) {
+    .terminal {
+        width: 95%;
+        height: 90vh;
+        border-radius: 4px;
+    }
+
+    .terminal-title {
+        font-size: 12px;
+    }
+
+    .messages {
+        padding: 15px;
+    }
+
+    .message {
+        font-size: 13px;
+    }
+}

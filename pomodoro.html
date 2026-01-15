@@ -1,0 +1,1535 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meadow Timer</title>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            image-rendering: pixelated;
+        }
+
+        :root {
+            --sky-orange: #e8943a;
+            --sky-peach: #f4c07a;
+            --meadow-green: #5a9b4a;
+            --meadow-light: #7cb86a;
+            --meadow-dark: #4a8a3a;
+            --flower-red: #d64a5a;
+            --flower-pink: #e87a8a;
+            --cloud-white: #fff8f0;
+            --path-cream: #e8e0c8;
+            --path-light: #f0e8d8;
+            --text-dark: #2a4a2a;
+        }
+
+        body {
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: url('bg.jpg') center center / cover no-repeat fixed;
+            font-family: 'Press Start 2P', monospace;
+            overflow: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background: linear-gradient(
+                180deg,
+                rgba(232, 148, 58, 0.08) 0%,
+                rgba(90, 155, 74, 0.12) 100%
+            );
+            pointer-events: none;
+        }
+
+        .container {
+            position: relative;
+            width: 100%;
+            height: 100vh;
+            padding: 25px;
+        }
+
+        /* Main Card */
+        .card {
+            background: rgba(255, 252, 245, 0.94);
+            border: 4px solid var(--meadow-green);
+            border-radius: 16px;
+            padding: 25px 30px;
+            box-shadow:
+                0 6px 0 rgba(40, 80, 40, 0.3),
+                0 12px 40px rgba(0, 0, 0, 0.2);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            cursor: move;
+            user-select: none;
+            z-index: 10;
+        }
+
+        .card.dragging {
+            opacity: 0.9;
+            box-shadow:
+                0 10px 0 rgba(40, 80, 40, 0.3),
+                0 20px 50px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Timer Display */
+        .timer-section {
+            text-align: center;
+        }
+
+        .timer-label {
+            font-size: 10px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--meadow-green);
+            margin-bottom: 8px;
+        }
+
+        .timer-display {
+            font-size: 38px;
+            color: var(--text-dark);
+            text-shadow: 2px 2px 0 rgba(90, 155, 74, 0.15);
+        }
+
+        /* Pomodoro Counter */
+        .pomodoro-counter {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 12px;
+            padding: 8px 16px;
+            background: rgba(90, 155, 74, 0.1);
+            border-radius: 20px;
+            border: 2px solid rgba(90, 155, 74, 0.3);
+        }
+
+        .counter-label {
+            font-size: 8px;
+            color: var(--meadow-green);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .counter-value {
+            font-size: 16px;
+            color: var(--text-dark);
+            font-weight: bold;
+            min-width: 24px;
+            text-align: center;
+        }
+
+        /* Path Scene */
+        .path-scene {
+            width: 280px;
+            height: 100px;
+            position: relative;
+            margin: 10px 0;
+        }
+
+        /* The winding path */
+        .path {
+            position: absolute;
+            bottom: 8px;
+            left: 0;
+            right: 0;
+            height: 20px;
+        }
+
+        .path-segment {
+            position: absolute;
+            height: 12px;
+            background: var(--path-cream);
+            border-radius: 6px;
+            box-shadow: inset 0 2px 0 rgba(255,255,255,0.5), 0 2px 0 #c8c0a8;
+        }
+
+        .path-segment:nth-child(1) { left: 0; width: 50px; bottom: 0; }
+        .path-segment:nth-child(2) { left: 40px; width: 60px; bottom: 10px; transform: rotate(-8deg); }
+        .path-segment:nth-child(3) { left: 90px; width: 50px; bottom: 18px; }
+        .path-segment:nth-child(4) { left: 130px; width: 60px; bottom: 12px; transform: rotate(8deg); }
+        .path-segment:nth-child(5) { left: 180px; width: 50px; bottom: 5px; }
+        .path-segment:nth-child(6) { left: 220px; width: 60px; bottom: 0; }
+
+        /* Destination - Cozy cottage */
+        .destination {
+            position: absolute;
+            right: 0;
+            bottom: 15px;
+            width: 40px;
+            height: 45px;
+        }
+
+        .cottage {
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+
+        .cottage-roof {
+            position: absolute;
+            top: 0;
+            left: -5px;
+            width: 0;
+            height: 0;
+            border-left: 25px solid transparent;
+            border-right: 25px solid transparent;
+            border-bottom: 20px solid #c45a3a;
+        }
+
+        .cottage-roof::after {
+            content: '';
+            position: absolute;
+            top: 8px;
+            left: -8px;
+            width: 16px;
+            height: 12px;
+            background: #8b4513;
+            border-radius: 2px;
+        }
+
+        .cottage-body {
+            position: absolute;
+            bottom: 0;
+            left: 2px;
+            width: 36px;
+            height: 25px;
+            background: linear-gradient(180deg, #f5dcc4 0%, #e8c8a8 100%);
+            border-radius: 2px;
+            box-shadow: inset 0 2px 0 rgba(255,255,255,0.4);
+        }
+
+        .cottage-door {
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 10px;
+            height: 14px;
+            background: #8b4513;
+            border-radius: 2px 2px 0 0;
+        }
+
+        .cottage-window {
+            position: absolute;
+            top: 5px;
+            width: 8px;
+            height: 8px;
+            background: #87ceeb;
+            border: 2px solid #a08060;
+        }
+
+        .cottage-window.left { left: 4px; }
+        .cottage-window.right { right: 4px; }
+
+        /* Flowers along path */
+        .path-flower {
+            position: absolute;
+            font-size: 10px;
+            animation: sway 2s ease-in-out infinite;
+        }
+
+        .path-flower:nth-child(1) { left: 15px; bottom: 25px; animation-delay: 0s; }
+        .path-flower:nth-child(2) { left: 70px; bottom: 35px; animation-delay: 0.5s; }
+        .path-flower:nth-child(3) { left: 120px; bottom: 38px; animation-delay: 1s; }
+        .path-flower:nth-child(4) { left: 170px; bottom: 30px; animation-delay: 0.3s; }
+
+        @keyframes sway {
+            0%, 100% { transform: rotate(-5deg); }
+            50% { transform: rotate(5deg); }
+        }
+
+        /* Walking character */
+        .walker {
+            position: absolute;
+            bottom: 20px;
+            left: 0;
+            width: 20px;
+            height: 28px;
+            transition: left 0.5s ease-out;
+            z-index: 10;
+        }
+
+        /* Character body */
+        .walker-body {
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Head */
+        .walker-head {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 12px;
+            height: 12px;
+            background: #ffd4a8;
+            border-radius: 50%;
+            box-shadow: inset -2px -2px 0 rgba(0,0,0,0.1);
+        }
+
+        /* Hair */
+        .walker-head::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -1px;
+            width: 14px;
+            height: 8px;
+            background: #8b4513;
+            border-radius: 50% 50% 0 0;
+        }
+
+        /* Body/Shirt */
+        .walker-shirt {
+            position: absolute;
+            top: 11px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 10px;
+            height: 10px;
+            background: var(--flower-red);
+            border-radius: 2px;
+        }
+
+        /* Legs */
+        .walker-legs {
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 10px;
+            height: 8px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .walker-leg {
+            width: 4px;
+            height: 8px;
+            background: #5a7a9a;
+            border-radius: 0 0 2px 2px;
+        }
+
+        /* Walking animation */
+        .walker.walking .walker-leg:first-child {
+            animation: walkLeft 0.3s ease-in-out infinite;
+        }
+
+        .walker.walking .walker-leg:last-child {
+            animation: walkRight 0.3s ease-in-out infinite;
+        }
+
+        @keyframes walkLeft {
+            0%, 100% { transform: rotate(-15deg); }
+            50% { transform: rotate(15deg); }
+        }
+
+        @keyframes walkRight {
+            0%, 100% { transform: rotate(15deg); }
+            50% { transform: rotate(-15deg); }
+        }
+
+        /* Bounce when walking */
+        .walker.walking .walker-body {
+            animation: bounce 0.3s ease-in-out infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-2px); }
+        }
+
+        /* Celebration when arrived */
+        .walker.arrived .walker-body {
+            animation: celebrate 0.5s ease-in-out infinite;
+        }
+
+        @keyframes celebrate {
+            0%, 100% { transform: translateY(0) rotate(0); }
+            25% { transform: translateY(-4px) rotate(-5deg); }
+            75% { transform: translateY(-4px) rotate(5deg); }
+        }
+
+        /* Controls */
+        .controls {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            font-family: 'Press Start 2P', monospace;
+            font-size: 10px;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            text-transform: uppercase;
+        }
+
+        .btn-primary {
+            background: linear-gradient(180deg, var(--meadow-light) 0%, var(--meadow-green) 100%);
+            color: white;
+            border: 3px solid var(--meadow-dark);
+            box-shadow: 0 4px 0 #3a6a2a;
+            text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 0 #3a6a2a;
+        }
+
+        .btn-primary:active {
+            transform: translateY(2px);
+            box-shadow: 0 2px 0 #3a6a2a;
+        }
+
+        .btn-secondary {
+            background: linear-gradient(180deg, #f0e8d8 0%, #e0d8c8 100%);
+            color: var(--text-dark);
+            border: 3px solid #c8c0a8;
+            box-shadow: 0 4px 0 #a8a088;
+        }
+
+        .btn-secondary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 0 #a8a088;
+        }
+
+        .btn-secondary:active {
+            transform: translateY(2px);
+            box-shadow: 0 2px 0 #a8a088;
+        }
+
+        /* Mode buttons */
+        .mode-buttons {
+            display: flex;
+            gap: 8px;
+        }
+
+        .mode-btn {
+            font-family: 'Press Start 2P', monospace;
+            font-size: 8px;
+            padding: 10px 14px;
+            background: rgba(255, 255, 255, 0.8);
+            border: 2px solid #d0c8b8;
+            border-radius: 20px;
+            color: #999;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .mode-btn:hover {
+            background: rgba(255, 255, 255, 1);
+            color: var(--text-dark);
+        }
+
+        .mode-btn.active {
+            background: var(--sky-peach);
+            border-color: var(--sky-orange);
+            color: var(--text-dark);
+            box-shadow: 0 2px 0 #c8884a;
+        }
+
+        /* Message */
+        .message {
+            position: fixed;
+            top: 25px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-15px);
+            background: var(--cloud-white);
+            border: 3px solid var(--meadow-green);
+            padding: 12px 20px;
+            border-radius: 10px;
+            font-size: 9px;
+            color: var(--text-dark);
+            opacity: 0;
+            transition: all 0.3s ease;
+            pointer-events: none;
+            box-shadow: 0 4px 0 rgba(90, 155, 74, 0.3);
+        }
+
+        .message.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        /* Toggle Buttons */
+        .toggle-buttons {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            display: flex;
+            gap: 8px;
+        }
+
+        .toggle-btn {
+            width: 36px;
+            height: 36px;
+            border: none;
+            border-radius: 50%;
+            background: linear-gradient(180deg, var(--meadow-light) 0%, var(--meadow-green) 100%);
+            border: 2px solid var(--meadow-dark);
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 0 #3a6a2a;
+        }
+
+        .toggle-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .toggle-btn.active {
+            background: linear-gradient(180deg, var(--sky-peach) 0%, var(--sky-orange) 100%);
+            border-color: #c8884a;
+            box-shadow: 0 2px 0 #a86830;
+        }
+
+        /* Music Player */
+        .music-player {
+            position: absolute;
+            top: 50%;
+            left: calc(50% + 200px);
+            transform: translateY(-50%);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+            z-index: 10;
+            cursor: move;
+            user-select: none;
+        }
+
+        .music-player.show {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .music-player.dragging {
+            opacity: 0.9;
+        }
+
+        .music-player-inner {
+            background: rgba(255, 252, 245, 0.94);
+            border: 4px solid var(--meadow-green);
+            border-radius: 16px;
+            padding: 15px;
+            box-shadow:
+                0 6px 0 rgba(40, 80, 40, 0.3),
+                0 12px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        .ambient-label {
+            font-size: 8px;
+            color: var(--meadow-green);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            text-align: center;
+            margin-bottom: 12px;
+        }
+
+        .sound-options {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            margin-bottom: 15px;
+        }
+
+        .sound-btn {
+            font-family: 'Press Start 2P', monospace;
+            font-size: 8px;
+            padding: 10px 12px;
+            background: rgba(255, 255, 255, 0.8);
+            border: 2px solid #d0c8b8;
+            border-radius: 8px;
+            color: #888;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .sound-btn:hover {
+            background: rgba(255, 255, 255, 1);
+            color: var(--text-dark);
+        }
+
+        .sound-btn.active {
+            background: var(--meadow-light);
+            border-color: var(--meadow-green);
+            color: white;
+            text-shadow: 1px 1px 0 rgba(0,0,0,0.2);
+        }
+
+        .volume-control {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        .volume-icon {
+            font-size: 14px;
+        }
+
+        #volumeSlider {
+            width: 150px;
+            height: 8px;
+            -webkit-appearance: none;
+            appearance: none;
+            background: #d0c8b8;
+            border-radius: 4px;
+            outline: none;
+        }
+
+        #volumeSlider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            background: var(--meadow-green);
+            border-radius: 50%;
+            cursor: pointer;
+            border: 2px solid var(--meadow-dark);
+        }
+
+        #volumeSlider::-moz-range-thumb {
+            width: 18px;
+            height: 18px;
+            background: var(--meadow-green);
+            border-radius: 50%;
+            cursor: pointer;
+            border: 2px solid var(--meadow-dark);
+        }
+
+        /* To-Do Panel */
+        .todo-panel {
+            position: absolute;
+            top: 50%;
+            left: calc(50% - 200px);
+            transform: translate(-100%, -50%);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+            z-index: 10;
+            cursor: move;
+            user-select: none;
+        }
+
+        .todo-panel.show {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .todo-panel.dragging {
+            opacity: 0.9;
+        }
+
+        .todo-inner {
+            background: rgba(255, 252, 245, 0.94);
+            border: 4px solid var(--meadow-green);
+            border-radius: 16px;
+            padding: 15px;
+            width: 250px;
+            box-shadow:
+                0 6px 0 rgba(40, 80, 40, 0.3),
+                0 12px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        .todo-header {
+            font-size: 10px;
+            color: var(--meadow-green);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            text-align: center;
+            margin-bottom: 12px;
+        }
+
+        .todo-input-area {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        #todoInput {
+            flex: 1;
+            font-family: 'Press Start 2P', monospace;
+            font-size: 8px;
+            padding: 10px;
+            border: 2px solid #d0c8b8;
+            border-radius: 8px;
+            background: white;
+            color: var(--text-dark);
+            outline: none;
+        }
+
+        #todoInput:focus {
+            border-color: var(--meadow-green);
+        }
+
+        #todoInput::placeholder {
+            color: #aaa;
+        }
+
+        .todo-add-btn {
+            width: 36px;
+            height: 36px;
+            font-family: 'Press Start 2P', monospace;
+            font-size: 16px;
+            background: linear-gradient(180deg, var(--meadow-light) 0%, var(--meadow-green) 100%);
+            border: 2px solid var(--meadow-dark);
+            border-radius: 8px;
+            color: white;
+            cursor: pointer;
+            box-shadow: 0 2px 0 #3a6a2a;
+            transition: all 0.15s ease;
+        }
+
+        .todo-add-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 3px 0 #3a6a2a;
+        }
+
+        .todo-add-btn:active {
+            transform: translateY(1px);
+            box-shadow: 0 1px 0 #3a6a2a;
+        }
+
+        .todo-list {
+            list-style: none;
+            max-height: 200px;
+            overflow-y: auto;
+            margin-bottom: 12px;
+        }
+
+        .todo-list::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .todo-list::-webkit-scrollbar-track {
+            background: #e8e0d0;
+            border-radius: 3px;
+        }
+
+        .todo-list::-webkit-scrollbar-thumb {
+            background: var(--meadow-green);
+            border-radius: 3px;
+        }
+
+        .todo-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px;
+            background: rgba(255, 255, 255, 0.6);
+            border-radius: 6px;
+            margin-bottom: 6px;
+            animation: fadeIn 0.2s ease;
+        }
+
+        .todo-item.completed {
+            opacity: 0.6;
+        }
+
+        .todo-item.completed .todo-text {
+            text-decoration: line-through;
+            color: #999;
+        }
+
+        .todo-checkbox {
+            width: 18px;
+            height: 18px;
+            border: 2px solid #d0c8b8;
+            border-radius: 4px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            transition: all 0.2s ease;
+        }
+
+        .todo-checkbox:hover {
+            border-color: var(--meadow-green);
+        }
+
+        .todo-item.completed .todo-checkbox {
+            background: var(--meadow-green);
+            border-color: var(--meadow-green);
+        }
+
+        .todo-checkbox::after {
+            content: '✓';
+            font-size: 10px;
+            color: white;
+            opacity: 0;
+        }
+
+        .todo-item.completed .todo-checkbox::after {
+            opacity: 1;
+        }
+
+        .todo-text {
+            flex: 1;
+            font-size: 8px;
+            color: var(--text-dark);
+            word-break: break-word;
+        }
+
+        .todo-delete {
+            width: 20px;
+            height: 20px;
+            background: none;
+            border: none;
+            font-size: 10px;
+            color: #ccc;
+            cursor: pointer;
+            opacity: 0;
+            transition: all 0.2s ease;
+        }
+
+        .todo-item:hover .todo-delete {
+            opacity: 1;
+        }
+
+        .todo-delete:hover {
+            color: var(--flower-red);
+        }
+
+        .todo-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 8px;
+            border-top: 2px solid #e8e0d0;
+        }
+
+        #todoCount {
+            font-size: 7px;
+            color: #999;
+        }
+
+        .todo-clear-btn {
+            font-family: 'Press Start 2P', monospace;
+            font-size: 6px;
+            padding: 6px 10px;
+            background: rgba(255, 255, 255, 0.8);
+            border: 2px solid #d0c8b8;
+            border-radius: 6px;
+            color: #888;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .todo-clear-btn:hover {
+            background: var(--flower-red);
+            border-color: #b03a4a;
+            color: white;
+        }
+
+        /* Responsive */
+        @media (max-width: 400px) {
+            .timer-display { font-size: 30px; }
+            .card { padding: 20px; }
+            .path-scene { width: 240px; }
+            .mode-btn { font-size: 7px; padding: 8px 10px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <!-- Toggle buttons -->
+            <div class="toggle-buttons">
+                <button class="toggle-btn" id="todoBtn">📝</button>
+                <button class="toggle-btn" id="musicBtn">🎵</button>
+            </div>
+
+            <!-- Timer -->
+            <div class="timer-section">
+                <div class="timer-label" id="timerLabel">Focus</div>
+                <div class="timer-display" id="timerDisplay">25:00</div>
+                <div class="pomodoro-counter">
+                    <span class="counter-label">Pomodoros:</span>
+                    <span class="counter-value" id="pomodoroCount">0</span>
+                </div>
+            </div>
+
+            <!-- Path Scene -->
+            <div class="path-scene">
+                <!-- Path segments -->
+                <div class="path">
+                    <div class="path-segment"></div>
+                    <div class="path-segment"></div>
+                    <div class="path-segment"></div>
+                    <div class="path-segment"></div>
+                    <div class="path-segment"></div>
+                    <div class="path-segment"></div>
+                </div>
+
+                <!-- Flowers -->
+                <div class="path-flower">🌷</div>
+                <div class="path-flower">🌸</div>
+                <div class="path-flower">🌼</div>
+                <div class="path-flower">🌺</div>
+
+                <!-- Destination cottage -->
+                <div class="destination">
+                    <div class="cottage">
+                        <div class="cottage-roof"></div>
+                        <div class="cottage-body">
+                            <div class="cottage-door"></div>
+                            <div class="cottage-window left"></div>
+                            <div class="cottage-window right"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Walker -->
+                <div class="walker" id="walker">
+                    <div class="walker-body">
+                        <div class="walker-head"></div>
+                        <div class="walker-shirt"></div>
+                        <div class="walker-legs">
+                            <div class="walker-leg"></div>
+                            <div class="walker-leg"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Controls -->
+            <div class="controls">
+                <button class="btn btn-primary" id="startBtn">Start</button>
+                <button class="btn btn-secondary" id="resetBtn">Reset</button>
+            </div>
+
+            <!-- Mode buttons -->
+            <div class="mode-buttons">
+                <button class="mode-btn active" id="focusBtn">Focus</button>
+                <button class="mode-btn" id="prepBtn">Prep</button>
+                <button class="mode-btn" id="shortBtn">Short Break</button>
+                <button class="mode-btn" id="longBtn">Long Break</button>
+            </div>
+        </div>
+
+        <!-- Music Player -->
+        <div class="music-player" id="musicPlayer">
+            <div class="music-player-inner">
+                <div class="ambient-label">Ambient Sounds</div>
+                <div class="sound-options">
+                    <button class="sound-btn active" data-sound="rain">🌧️ Rain</button>
+                    <button class="sound-btn" data-sound="forest">🌲 Forest</button>
+                    <button class="sound-btn" data-sound="wind">🍃 Wind</button>
+                </div>
+                <div class="volume-control">
+                    <span class="volume-icon">🔊</span>
+                    <input type="range" id="volumeSlider" min="0" max="100" value="50">
+                </div>
+            </div>
+        </div>
+
+        <!-- To-Do List -->
+        <div class="todo-panel" id="todoPanel">
+            <div class="todo-inner">
+                <div class="todo-header">To-Do List</div>
+                <div class="todo-input-area">
+                    <input type="text" id="todoInput" placeholder="Add a task..." maxlength="50">
+                    <button class="todo-add-btn" id="todoAddBtn">+</button>
+                </div>
+                <ul class="todo-list" id="todoList"></ul>
+                <div class="todo-footer">
+                    <span id="todoCount">0 tasks</span>
+                    <button class="todo-clear-btn" id="todoClearBtn">Clear done</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Message popup -->
+    <div class="message" id="message"></div>
+
+    <script>
+        const CONFIG = {
+            focus: 25 * 60,
+            prep: 10 * 60,
+            shortBreak: 5 * 60,
+            longBreak: 15 * 60
+        };
+
+        const PATH_START = 0;
+        const PATH_END = 220; // pixels to travel
+
+        let state = {
+            time: CONFIG.focus,
+            running: false,
+            mode: 'focus',
+            pomodorosCompleted: 0,
+            interval: null
+        };
+
+        // Elements
+        const timerDisplay = document.getElementById('timerDisplay');
+        const timerLabel = document.getElementById('timerLabel');
+        const startBtn = document.getElementById('startBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const focusBtn = document.getElementById('focusBtn');
+        const prepBtn = document.getElementById('prepBtn');
+        const shortBtn = document.getElementById('shortBtn');
+        const longBtn = document.getElementById('longBtn');
+        const pomodoroCount = document.getElementById('pomodoroCount');
+        const walker = document.getElementById('walker');
+        const message = document.getElementById('message');
+        const musicBtn = document.getElementById('musicBtn');
+        const musicPlayer = document.getElementById('musicPlayer');
+        const todoBtn = document.getElementById('todoBtn');
+        const todoPanel = document.getElementById('todoPanel');
+        const todoInput = document.getElementById('todoInput');
+        const todoAddBtn = document.getElementById('todoAddBtn');
+        const todoList = document.getElementById('todoList');
+        const todoCount = document.getElementById('todoCount');
+        const todoClearBtn = document.getElementById('todoClearBtn');
+
+        function formatTime(s) {
+            const m = Math.floor(s / 60);
+            const sec = s % 60;
+            return `${m.toString().padStart(2, '0')}:${sec.toString().padStart(2, '0')}`;
+        }
+
+        function getTotal() {
+            return CONFIG[state.mode] || CONFIG.focus;
+        }
+
+        function updateDisplay() {
+            timerDisplay.textContent = formatTime(state.time);
+            startBtn.textContent = state.running ? 'Pause' : 'Start';
+
+            // Update walker position
+            const progress = 1 - (state.time / getTotal());
+            const position = PATH_START + (progress * PATH_END);
+            walker.style.left = position + 'px';
+
+            // Walking animation
+            if (state.running) {
+                walker.classList.add('walking');
+                walker.classList.remove('arrived');
+            } else {
+                walker.classList.remove('walking');
+            }
+
+            // Update pomodoro counter
+            pomodoroCount.textContent = state.pomodorosCompleted;
+        }
+
+        function showMessage(text) {
+            message.textContent = text;
+            message.classList.add('show');
+            setTimeout(() => message.classList.remove('show'), 2500);
+        }
+
+        function arrivedAtDestination() {
+            walker.classList.remove('walking');
+            walker.classList.add('arrived');
+        }
+
+        function setMode(mode) {
+            state.mode = mode;
+            state.time = CONFIG[mode];
+            state.running = false;
+            clearInterval(state.interval);
+
+            // Update buttons
+            [focusBtn, prepBtn, shortBtn, longBtn].forEach(btn => btn.classList.remove('active'));
+            if (mode === 'focus') focusBtn.classList.add('active');
+            if (mode === 'prep') prepBtn.classList.add('active');
+            if (mode === 'shortBreak') shortBtn.classList.add('active');
+            if (mode === 'longBreak') longBtn.classList.add('active');
+
+            // Update label
+            const labels = {
+                focus: 'Focus',
+                prep: 'Prep Time',
+                shortBreak: 'Short Break',
+                longBreak: 'Long Break'
+            };
+            timerLabel.textContent = labels[mode] || 'Focus';
+
+            // Reset walker
+            walker.style.left = PATH_START + 'px';
+            walker.classList.remove('walking', 'arrived');
+
+            updateDisplay();
+        }
+
+        function tick() {
+            if (state.time > 0) {
+                state.time--;
+                updateDisplay();
+            } else {
+                clearInterval(state.interval);
+                state.running = false;
+                arrivedAtDestination();
+                playBell(); // Bell at end
+
+                if (state.mode === 'focus') {
+                    state.pomodorosCompleted++;
+                    showMessage('Pomodoro complete! You made it 🏡');
+                    updateDisplay();
+                } else if (state.mode === 'prep') {
+                    showMessage('Prep done! Ready to focus 🎯');
+                } else {
+                    showMessage('Break over! Ready to go? 🚶');
+                }
+            }
+        }
+
+        function toggle() {
+            if (state.running) {
+                clearInterval(state.interval);
+                state.running = false;
+            } else {
+                playBell(); // Bell at start
+                state.interval = setInterval(tick, 1000);
+                state.running = true;
+            }
+            updateDisplay();
+        }
+
+        function reset() {
+            clearInterval(state.interval);
+            state.running = false;
+            setMode('focus');
+            showMessage('Back to the start! 🌻');
+        }
+
+        // Events
+        startBtn.addEventListener('click', toggle);
+        resetBtn.addEventListener('click', reset);
+        focusBtn.addEventListener('click', () => setMode('focus'));
+        prepBtn.addEventListener('click', () => setMode('prep'));
+        shortBtn.addEventListener('click', () => setMode('shortBreak'));
+        longBtn.addEventListener('click', () => setMode('longBreak'));
+
+        document.addEventListener('keydown', (e) => {
+            // Don't trigger if user is typing in an input
+            if (e.target.tagName === 'INPUT') return;
+
+            if (e.code === 'Space') {
+                e.preventDefault();
+                toggle();
+            }
+        });
+
+        // ============================================
+        // Ambient Sound Generator
+        // ============================================
+        let audioCtx = null;
+        let currentSound = null;
+        let gainNode = null;
+        let isPlaying = false;
+
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                gainNode = audioCtx.createGain();
+                gainNode.connect(audioCtx.destination);
+                gainNode.gain.value = 0.5;
+            }
+        }
+
+        // ============================================
+        // Bell Sound
+        // ============================================
+        function playBell() {
+            initAudio();
+
+            const bellGain = audioCtx.createGain();
+            bellGain.connect(audioCtx.destination);
+            bellGain.gain.setValueAtTime(0.4, audioCtx.currentTime);
+
+            // Create two bell strikes
+            [0, 0.4].forEach(delay => {
+                // Main bell tone
+                const osc1 = audioCtx.createOscillator();
+                const osc2 = audioCtx.createOscillator();
+                const oscGain = audioCtx.createGain();
+
+                osc1.type = 'sine';
+                osc1.frequency.setValueAtTime(830, audioCtx.currentTime + delay); // High bell tone
+
+                osc2.type = 'sine';
+                osc2.frequency.setValueAtTime(1245, audioCtx.currentTime + delay); // Harmonic
+
+                // Bell envelope - quick attack, slow decay
+                oscGain.gain.setValueAtTime(0, audioCtx.currentTime + delay);
+                oscGain.gain.linearRampToValueAtTime(0.3, audioCtx.currentTime + delay + 0.01);
+                oscGain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + delay + 0.8);
+
+                osc1.connect(oscGain);
+                osc2.connect(oscGain);
+                oscGain.connect(bellGain);
+
+                osc1.start(audioCtx.currentTime + delay);
+                osc2.start(audioCtx.currentTime + delay);
+                osc1.stop(audioCtx.currentTime + delay + 1);
+                osc2.stop(audioCtx.currentTime + delay + 1);
+
+                // Add metallic overtone
+                const osc3 = audioCtx.createOscillator();
+                const osc3Gain = audioCtx.createGain();
+                osc3.type = 'triangle';
+                osc3.frequency.setValueAtTime(2489, audioCtx.currentTime + delay);
+                osc3Gain.gain.setValueAtTime(0, audioCtx.currentTime + delay);
+                osc3Gain.gain.linearRampToValueAtTime(0.08, audioCtx.currentTime + delay + 0.01);
+                osc3Gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + delay + 0.4);
+
+                osc3.connect(osc3Gain);
+                osc3Gain.connect(bellGain);
+                osc3.start(audioCtx.currentTime + delay);
+                osc3.stop(audioCtx.currentTime + delay + 0.5);
+            });
+        }
+
+        function createNoise(type) {
+            const bufferSize = 2 * audioCtx.sampleRate;
+            const noiseBuffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+            const output = noiseBuffer.getChannelData(0);
+
+            if (type === 'white') {
+                for (let i = 0; i < bufferSize; i++) {
+                    output[i] = Math.random() * 2 - 1;
+                }
+            } else if (type === 'brown') {
+                let lastOut = 0;
+                for (let i = 0; i < bufferSize; i++) {
+                    const white = Math.random() * 2 - 1;
+                    output[i] = (lastOut + (0.02 * white)) / 1.02;
+                    lastOut = output[i];
+                    output[i] *= 3.5;
+                }
+            }
+
+            const whiteNoise = audioCtx.createBufferSource();
+            whiteNoise.buffer = noiseBuffer;
+            whiteNoise.loop = true;
+            return whiteNoise;
+        }
+
+        function createRain() {
+            const noise = createNoise('white');
+            const filter = audioCtx.createBiquadFilter();
+            filter.type = 'lowpass';
+            filter.frequency.value = 1000;
+
+            const filter2 = audioCtx.createBiquadFilter();
+            filter2.type = 'highpass';
+            filter2.frequency.value = 200;
+
+            noise.connect(filter);
+            filter.connect(filter2);
+            filter2.connect(gainNode);
+
+            return noise;
+        }
+
+        function createForest() {
+            const noise = createNoise('brown');
+            const filter = audioCtx.createBiquadFilter();
+            filter.type = 'lowpass';
+            filter.frequency.value = 400;
+
+            noise.connect(filter);
+            filter.connect(gainNode);
+
+            return noise;
+        }
+
+        function createWind() {
+            const noise = createNoise('brown');
+            const filter = audioCtx.createBiquadFilter();
+            filter.type = 'bandpass';
+            filter.frequency.value = 300;
+            filter.Q.value = 0.5;
+
+            // Add subtle modulation
+            const lfo = audioCtx.createOscillator();
+            const lfoGain = audioCtx.createGain();
+            lfo.frequency.value = 0.2;
+            lfoGain.gain.value = 150;
+            lfo.connect(lfoGain);
+            lfoGain.connect(filter.frequency);
+            lfo.start();
+
+            noise.connect(filter);
+            filter.connect(gainNode);
+
+            noise.lfo = lfo;
+            return noise;
+        }
+
+        function playSound(soundType) {
+            initAudio();
+
+            if (currentSound) {
+                currentSound.stop();
+                if (currentSound.lfo) currentSound.lfo.stop();
+            }
+
+            if (soundType === 'rain') {
+                currentSound = createRain();
+            } else if (soundType === 'forest') {
+                currentSound = createForest();
+            } else if (soundType === 'wind') {
+                currentSound = createWind();
+            }
+
+            currentSound.start();
+            isPlaying = true;
+        }
+
+        function stopSound() {
+            if (currentSound) {
+                currentSound.stop();
+                if (currentSound.lfo) currentSound.lfo.stop();
+                currentSound = null;
+            }
+            isPlaying = false;
+        }
+
+        // Sound button events
+        const soundBtns = document.querySelectorAll('.sound-btn');
+        let activeSound = 'rain';
+
+        soundBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                soundBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                activeSound = btn.dataset.sound;
+                if (isPlaying) {
+                    playSound(activeSound);
+                }
+            });
+        });
+
+        // Volume control
+        const volumeSlider = document.getElementById('volumeSlider');
+        volumeSlider.addEventListener('input', (e) => {
+            if (gainNode) {
+                gainNode.gain.value = e.target.value / 100;
+            }
+        });
+
+        // Music toggle - start/stop sound
+        musicBtn.addEventListener('click', () => {
+            musicPlayer.classList.toggle('show');
+            musicBtn.classList.toggle('active');
+
+            if (musicPlayer.classList.contains('show')) {
+                playSound(activeSound);
+            } else {
+                stopSound();
+            }
+        });
+
+        // ============================================
+        // Drag Functionality
+        // ============================================
+        function makeDraggable(element) {
+            let isDragging = false;
+            let startX, startY, initialX, initialY;
+
+            element.addEventListener('mousedown', (e) => {
+                // Don't drag if clicking on buttons or inputs
+                if (e.target.tagName === 'BUTTON' || e.target.tagName === 'INPUT') return;
+
+                isDragging = true;
+                element.classList.add('dragging');
+
+                // Get current position
+                const rect = element.getBoundingClientRect();
+                initialX = rect.left;
+                initialY = rect.top;
+                startX = e.clientX;
+                startY = e.clientY;
+
+                // Remove transform and use left/top
+                element.style.transform = 'none';
+                element.style.left = initialX + 'px';
+                element.style.top = initialY + 'px';
+            });
+
+            document.addEventListener('mousemove', (e) => {
+                if (!isDragging) return;
+
+                const dx = e.clientX - startX;
+                const dy = e.clientY - startY;
+
+                element.style.left = (initialX + dx) + 'px';
+                element.style.top = (initialY + dy) + 'px';
+            });
+
+            document.addEventListener('mouseup', () => {
+                if (isDragging) {
+                    isDragging = false;
+                    element.classList.remove('dragging');
+                }
+            });
+
+            // Touch support
+            element.addEventListener('touchstart', (e) => {
+                if (e.target.tagName === 'BUTTON' || e.target.tagName === 'INPUT') return;
+
+                isDragging = true;
+                element.classList.add('dragging');
+
+                const touch = e.touches[0];
+                const rect = element.getBoundingClientRect();
+                initialX = rect.left;
+                initialY = rect.top;
+                startX = touch.clientX;
+                startY = touch.clientY;
+
+                element.style.transform = 'none';
+                element.style.left = initialX + 'px';
+                element.style.top = initialY + 'px';
+            });
+
+            document.addEventListener('touchmove', (e) => {
+                if (!isDragging) return;
+
+                const touch = e.touches[0];
+                const dx = touch.clientX - startX;
+                const dy = touch.clientY - startY;
+
+                element.style.left = (initialX + dx) + 'px';
+                element.style.top = (initialY + dy) + 'px';
+            });
+
+            document.addEventListener('touchend', () => {
+                if (isDragging) {
+                    isDragging = false;
+                    element.classList.remove('dragging');
+                }
+            });
+        }
+
+        // Make card, music player, and todo panel draggable
+        const card = document.querySelector('.card');
+        makeDraggable(card);
+        makeDraggable(musicPlayer);
+        makeDraggable(todoPanel);
+
+        // ============================================
+        // To-Do List Functionality
+        // ============================================
+        let todos = JSON.parse(localStorage.getItem('pomodoro-todos') || '[]');
+
+        function saveTodos() {
+            localStorage.setItem('pomodoro-todos', JSON.stringify(todos));
+        }
+
+        function updateTodoCount() {
+            const pending = todos.filter(t => !t.completed).length;
+            const total = todos.length;
+            todoCount.textContent = `${pending} of ${total} task${total !== 1 ? 's' : ''}`;
+        }
+
+        function renderTodos() {
+            todoList.innerHTML = '';
+            todos.forEach((todo, index) => {
+                const li = document.createElement('li');
+                li.className = 'todo-item' + (todo.completed ? ' completed' : '');
+                li.innerHTML = `
+                    <div class="todo-checkbox" data-index="${index}"></div>
+                    <span class="todo-text">${escapeHtml(todo.text)}</span>
+                    <button class="todo-delete" data-index="${index}">✕</button>
+                `;
+                todoList.appendChild(li);
+            });
+            updateTodoCount();
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function addTodo(text) {
+            if (!text.trim()) return;
+            todos.push({ text: text.trim(), completed: false });
+            saveTodos();
+            renderTodos();
+            todoInput.value = '';
+        }
+
+        function toggleTodo(index) {
+            todos[index].completed = !todos[index].completed;
+            saveTodos();
+            renderTodos();
+        }
+
+        function deleteTodo(index) {
+            todos.splice(index, 1);
+            saveTodos();
+            renderTodos();
+        }
+
+        function clearCompleted() {
+            todos = todos.filter(t => !t.completed);
+            saveTodos();
+            renderTodos();
+        }
+
+        // To-Do event listeners
+        todoBtn.addEventListener('click', () => {
+            todoPanel.classList.toggle('show');
+            todoBtn.classList.toggle('active');
+        });
+
+        todoAddBtn.addEventListener('click', () => {
+            addTodo(todoInput.value);
+        });
+
+        todoInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                addTodo(todoInput.value);
+            }
+        });
+
+        todoList.addEventListener('click', (e) => {
+            const index = e.target.dataset.index;
+            if (index === undefined) return;
+
+            if (e.target.classList.contains('todo-checkbox')) {
+                toggleTodo(parseInt(index));
+            } else if (e.target.classList.contains('todo-delete')) {
+                deleteTodo(parseInt(index));
+            }
+        });
+
+        todoClearBtn.addEventListener('click', clearCompleted);
+
+        // Load saved todos
+        renderTodos();
+
+        // Init
+        updateDisplay();
+    </script>
+</body>
+</html>
