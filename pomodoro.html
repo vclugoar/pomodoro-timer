@@ -278,33 +278,57 @@
             transform: translateX(-50%);
             width: 12px;
             height: 12px;
-            background: #ffd4a8;
+            background: #8B5A2B;
             border-radius: 50%;
-            box-shadow: inset -2px -2px 0 rgba(0,0,0,0.1);
+            box-shadow: inset -2px -2px 0 rgba(0,0,0,0.15);
         }
 
-        /* Hair */
+        /* Hair - longer curly style */
         .walker-head::before {
             content: '';
             position: absolute;
-            top: -2px;
-            left: -1px;
-            width: 14px;
-            height: 8px;
-            background: #8b4513;
-            border-radius: 50% 50% 0 0;
+            top: -3px;
+            left: -3px;
+            width: 18px;
+            height: 14px;
+            background: #1a1a1a;
+            border-radius: 50% 50% 40% 40%;
         }
 
-        /* Body/Shirt */
+        /* Hair puff/volume */
+        .walker-head::after {
+            content: '';
+            position: absolute;
+            top: -5px;
+            left: 0px;
+            width: 12px;
+            height: 8px;
+            background: #1a1a1a;
+            border-radius: 50%;
+        }
+
+        /* Body/Dress */
         .walker-shirt {
             position: absolute;
             top: 11px;
             left: 50%;
             transform: translateX(-50%);
-            width: 10px;
-            height: 10px;
-            background: var(--flower-red);
-            border-radius: 2px;
+            width: 12px;
+            height: 14px;
+            background: var(--flower-pink);
+            border-radius: 2px 2px 6px 6px;
+        }
+
+        /* Dress flare */
+        .walker-shirt::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: -2px;
+            width: 16px;
+            height: 6px;
+            background: var(--flower-pink);
+            border-radius: 0 0 50% 50%;
         }
 
         /* Legs */
@@ -313,16 +337,16 @@
             bottom: 0;
             left: 50%;
             transform: translateX(-50%);
-            width: 10px;
-            height: 8px;
+            width: 8px;
+            height: 6px;
             display: flex;
             justify-content: space-between;
         }
 
         .walker-leg {
-            width: 4px;
-            height: 8px;
-            background: #5a7a9a;
+            width: 3px;
+            height: 6px;
+            background: #8B5A2B;
             border-radius: 0 0 2px 2px;
         }
 
@@ -791,24 +815,57 @@
             word-break: break-word;
         }
 
+        .todo-actions {
+            display: flex;
+            gap: 4px;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+
+        .todo-item:hover .todo-actions {
+            opacity: 1;
+        }
+
+        .todo-edit,
         .todo-delete {
             width: 20px;
             height: 20px;
             background: none;
             border: none;
             font-size: 10px;
-            color: #ccc;
+            color: #aaa;
             cursor: pointer;
-            opacity: 0;
             transition: all 0.2s ease;
+            padding: 0;
         }
 
-        .todo-item:hover .todo-delete {
-            opacity: 1;
+        .todo-edit:hover {
+            color: var(--meadow-green);
         }
 
         .todo-delete:hover {
             color: var(--flower-red);
+        }
+
+        /* Edit mode */
+        .todo-item.editing .todo-text {
+            display: none;
+        }
+
+        .todo-item.editing .todo-actions {
+            display: none;
+        }
+
+        .todo-edit-input {
+            flex: 1;
+            font-family: 'Press Start 2P', monospace;
+            font-size: 8px;
+            padding: 4px 6px;
+            border: 2px solid var(--meadow-green);
+            border-radius: 4px;
+            background: white;
+            color: var(--text-dark);
+            outline: none;
         }
 
         .todo-footer {
@@ -1457,7 +1514,10 @@
                 li.innerHTML = `
                     <div class="todo-checkbox" data-index="${index}"></div>
                     <span class="todo-text">${escapeHtml(todo.text)}</span>
-                    <button class="todo-delete" data-index="${index}">✕</button>
+                    <div class="todo-actions">
+                        <button class="todo-edit" data-index="${index}">✎</button>
+                        <button class="todo-delete" data-index="${index}">✕</button>
+                    </div>
                 `;
                 todoList.appendChild(li);
             });
@@ -1490,6 +1550,43 @@
             renderTodos();
         }
 
+        function editTodo(index) {
+            const li = todoList.children[index];
+            const textSpan = li.querySelector('.todo-text');
+            const currentText = todos[index].text;
+
+            li.classList.add('editing');
+
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.className = 'todo-edit-input';
+            input.value = currentText;
+            input.maxLength = 50;
+
+            li.insertBefore(input, textSpan);
+            input.focus();
+            input.select();
+
+            function saveEdit() {
+                const newText = input.value.trim();
+                if (newText && newText !== currentText) {
+                    todos[index].text = newText;
+                    saveTodos();
+                }
+                renderTodos();
+            }
+
+            input.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    saveEdit();
+                } else if (e.key === 'Escape') {
+                    renderTodos();
+                }
+            });
+
+            input.addEventListener('blur', saveEdit);
+        }
+
         function clearCompleted() {
             todos = todos.filter(t => !t.completed);
             saveTodos();
@@ -1518,6 +1615,8 @@
 
             if (e.target.classList.contains('todo-checkbox')) {
                 toggleTodo(parseInt(index));
+            } else if (e.target.classList.contains('todo-edit')) {
+                editTodo(parseInt(index));
             } else if (e.target.classList.contains('todo-delete')) {
                 deleteTodo(parseInt(index));
             }

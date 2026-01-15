@@ -2,7 +2,11 @@
   "permissions": {
     "allow": [
       "Bash(open:*)",
-      "WebSearch"
+      "WebSearch",
+      "Bash(gh repo edit:*)",
+      "Bash(gh api:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)"
     ]
   }
 }
