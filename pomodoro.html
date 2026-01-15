@@ -939,12 +939,6 @@
                     <div class="path-segment"></div>
                 </div>
 
-                <!-- Flowers -->
-                <div class="path-flower">🌷</div>
-                <div class="path-flower">🌸</div>
-                <div class="path-flower">🌼</div>
-                <div class="path-flower">🌺</div>
-
                 <!-- Destination cottage -->
                 <div class="destination">
                     <div class="cottage">
@@ -1145,12 +1139,22 @@
 
                 if (state.mode === 'focus') {
                     state.pomodorosCompleted++;
-                    showMessage('Pomodoro complete! You made it 🏡');
                     updateDisplay();
+
+                    if (state.pomodorosCompleted % 4 === 0) {
+                        showMessage('4 Pomodoros done! Long break time 🏡');
+                        setTimeout(() => startMode('longBreak'), 3000);
+                    } else {
+                        showMessage('Pomodoro complete! Short break 🌸');
+                        setTimeout(() => startMode('shortBreak'), 3000);
+                    }
                 } else if (state.mode === 'prep') {
-                    showMessage('Prep done! Ready to focus 🎯');
+                    showMessage('Prep done! Starting focus 🎯');
+                    setTimeout(() => startMode('focus'), 3000);
                 } else {
-                    showMessage('Break over! Ready to go? 🚶');
+                    // After any break, start focus
+                    showMessage('Break over! Back to focus 🚶');
+                    setTimeout(() => startMode('focus'), 3000);
                 }
             }
         }
@@ -1165,6 +1169,11 @@
                 state.running = true;
             }
             updateDisplay();
+        }
+
+        function startMode(mode) {
+            setMode(mode);
+            toggle(); // This will play bell and start timer
         }
 
         function reset() {
