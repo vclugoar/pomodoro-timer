@@ -1408,7 +1408,8 @@
             running: false,
             mode: 'focus',
             pomodorosCompleted: 0,
-            interval: null
+            interval: null,
+            endTime: null // Track when timer should end (for background tab support)
         };
 
         // Elements
@@ -1506,6 +1507,7 @@
             state.mode = mode;
             state.time = CONFIG[mode];
             state.running = false;
+            state.endTime = null;
             clearInterval(state.interval);
 
             // Update buttons
@@ -1534,12 +1536,19 @@
         }
 
         function tick() {
-            if (state.time > 0) {
-                state.time--;
+            // Calculate remaining time from end time (works even in background tabs)
+            if (state.endTime) {
+                const remaining = Math.round((state.endTime - Date.now()) / 1000);
+                state.time = Math.max(0, remaining);
                 updateDisplay();
+            }
+
+            if (state.time > 0) {
+                return; // Still time left
             } else {
                 clearInterval(state.interval);
                 state.running = false;
+                state.endTime = null;
                 arrivedAtDestination();
                 playBell(); // Bell at end
 
@@ -1574,9 +1583,12 @@
             if (state.running) {
                 clearInterval(state.interval);
                 state.running = false;
+                state.endTime = null;
             } else {
                 requestNotificationPermission();
                 playBell(); // Bell at start
+                // Set end time based on current remaining time
+                state.endTime = Date.now() + (state.time * 1000);
                 state.interval = setInterval(tick, 1000);
                 state.running = true;
             }
@@ -1591,6 +1603,7 @@
         function reset() {
             clearInterval(state.interval);
             state.running = false;
+            state.endTime = null;
             setMode('focus');
             showMessage('Back to the start! 🌻');
         }
